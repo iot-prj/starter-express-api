@@ -35,9 +35,20 @@ const Healthdata = mongoose.model("Healthdata", healthdata);
 
 app.get("/update", async (req, res) => {
   try {
+    // Check if there are any existing entries
+    const existingData = await Healthdata.find();
+    console.log(existingData,'gdh')
+    
+    if (existingData && existingData.length > 0) {
+      // If there are existing entries, delete them all
+      await Healthdata.deleteMany({});
+      console.log("Deleted existing entries.");
+    }
+
+    // Create and add the new data to the database
     const data = {
       Temperature: req.query.Temperature,
-      Humidity: req.query.Humidity,
+      Humidity: req.query.Humidity, 
       Pressure: req.query.Pressure,
       Altitude: req.query.Altitude,
       Relay1: req.query.Relay1,
@@ -45,12 +56,17 @@ app.get("/update", async (req, res) => {
       Relay3: req.query.Relay3,
       Relay4: req.query.Relay4,
     };
+    
     await Healthdata.create(data);
+    console.log("Added new entry.");
+    
     res.json(data);
   } catch (err) {
     console.log(err);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 
 app.get("/api/patient", async (req, res) => {
